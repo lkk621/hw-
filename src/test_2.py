@@ -14,7 +14,7 @@ Arg1 = 0.6
 Arg2 = 0.4
 Day_needs = []       # 每一天的CPU和RAM需求
 Reqs_sort = []
-
+vm_sort = []
 
 def value_rd(v1, v2, r):
     if abs(v1-v2) <= r and (v1 >= 1 and v2 >= 1 or v1 < 1 and v2 < 1):
@@ -34,8 +34,10 @@ def readdata():
         line[3] = int(line[3])
         line[4] = int(line[4])
         line.append(round(line[1] / line[2], 1))
+        line.append((line[3] + line[4])//(line[1]*Arg1 + line[2]*Arg2))
         serv.append(line)
-    serv.sort(key=lambda x: (x[3] + x[4])//(x[1]*Arg1 + x[2]*Arg2))
+    # serv.sort(key=lambda x: (x[3] + x[4])//(x[1]*Arg1 + x[2]*Arg2))
+    serv.sort(key=lambda x: x[5])
     for ser in serv:
         serv_dict[ser[0]] = ser[1:]
     vm_num = int(sys.stdin.readline().rstrip('\n'))  # 读取虚拟机类型数量
@@ -46,6 +48,8 @@ def readdata():
         line[3] = int(line[3])
         line.append(round(line[1] / line[2], 1))
         vm[line[0]] = line[1:]
+        vm_sort.append(line)
+    vm_sort.sort(key=lambda x: x[4])
     Days = int(sys.stdin.readline())  # 读取请求天数T
     for i in range(Days):
         day_req = []
@@ -320,8 +324,14 @@ def main():
         # print("********************")
 
 
-if __name__ == "__main__":
-    # start = time.time()
-    main()
-    # end = time.time()
-    # print("用时：%s" % (start-end))
+# if __name__ == "__main__":
+#     # start = time.time()
+#     main()
+#     # end = time.time()
+#     # print("用时：%s" % (start-end))
+
+
+readdata()
+print(serv)
+print("******************")
+print(vm_sort)
