@@ -112,3 +112,21 @@
 
 1551562600	0.7	0.3
 
+4045
+
+```python
+# host = {主机号：[虚拟机类型，服务器ID，节点]}
+# serv_poll = {ID：[型号，两个节点的资源]}
+# vm = {类型：[CPU，RAM，单双，crr]}
+# servers = {服务器ID：[主机...]}
+# serv_dict = {CPU，内存，价格，维护费}
+# req = [add, vmO2SUG, 715157824]
+# req = [del, 1045441446]
+# yanzheng = {ID:[A, B]}
+# serv_poll[NUM] = [ser[0], ser[1] / 2, ser[2] / 2, ser[1] / 2, ser[2] / 2]
+
+```
+
+4137	加迁移
+
+4119	不加
