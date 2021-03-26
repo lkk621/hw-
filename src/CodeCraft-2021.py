@@ -10,9 +10,13 @@ serv_dict = {}
 vm = {}             # 虚拟机
 Reqs = []            # 请求
 Days = 0
-Arg1 = 0.6
-Arg2 = 0.4
+Arg1 = 0.67
+Arg2 = 0.33
 Day_needs = []       # 每一天的CPU和RAM需求
+
+yanzheng = {}
+cost = 0
+yan_n = 0
 
 
 def value_rd(v1, v2, r):
@@ -43,7 +47,8 @@ def readdata():
         line[1] = int(line[1])
         line[2] = int(line[2])
         line[3] = int(line[3])
-        line.append(round(line[1] / line[2], 1))
+        crr = round(line[1] / line[2], 1)
+        line.append(crr)
         vm[line[0]] = line[1:]
     Days = int(sys.stdin.readline())  # 读取请求天数T
     for i in range(Days):
@@ -68,6 +73,8 @@ def main():
     # process
     # to write standard output
     # sys.stdout.flush()
+    global cost
+    global yan_n
     readdata()                  # 读取数据
     serv_poll = {}              # 已购买的服务器
     host = {}                   # 存放申请虚拟机的主机信息
@@ -86,255 +93,79 @@ def main():
 
         # 迁移虚拟机
         day_move = {}           # {主机：目的服务器}
-        # move_num = NUM_VM // 200                        # 迁移数量不能超过当前VM的5/1000
-        # if NUM and move_num:
-        #     num_of_ser = NUM - 1
-        #     while move_num > 0:
-        #         for h in servers[num_of_ser]:           # servers = {服务器ID：[主机...]}
-        #             for k, v in serv_poll.items():      # serv_poll = {服务器ID：[型号，两个节点的资源]}
-        #                 if k >= num_of_ser:
-        #                     continue
-        #                 if vm[host[h][0]][2] == 1:
-        #                     if v[1] >= vm[host[h][0]][0]//2 and \
-        #                             v[3] >= vm[host[h][0]][0]//2 and \
-        #                             v[2] >= vm[host[h][0]][1]//2 and \
-        #                             v[4] >= vm[host[h][0]][1]//2:
-        #                         day_move[h] = [k]
-        #                         v[1] -= vm[host[h][0]][0] // 2  # 更新服务器池的信息
-        #                         v[2] -= vm[host[h][0]][1] // 2
-        #                         v[3] -= vm[host[h][0]][0] // 2
-        #                         v[4] -= vm[host[h][0]][1] // 2
-        #                         serv_poll[num_of_ser][1] += vm[host[h][0]][0] // 2
-        #                         serv_poll[num_of_ser][2] += vm[host[h][0]][1] // 2
-        #                         serv_poll[num_of_ser][3] += vm[host[h][0]][0] // 2
-        #                         serv_poll[num_of_ser][4] += vm[host[h][0]][1] // 2
-        #                         servers[num_of_ser].remove(h)
-        #                         servers[k].append(h)
-        #                         move_num -= 1
-        #                         break
-        #                 else:
-        #                     if v[1] >= vm[host[h][0]][0] and v[2] >= vm[host[h][0]][1]:
-        #                         day_move[h] = [k, 'A']
-        #                         servers[num_of_ser].remove(h)
-        #                         servers[k].append(h)
-        #                         v[1] -= vm[host[h][0]][0]   # 更新服务器池的信息
-        #                         v[2] -= vm[host[h][0]][1]
-        #                         if host[h][2] == 'A':
-        #                             serv_poll[num_of_ser][1] += vm[host[h][0]][0]
-        #                             serv_poll[num_of_ser][2] += vm[host[h][0]][1]
-        #                         else:
-        #                             serv_poll[num_of_ser][3] += vm[host[h][0]][0]
-        #                             serv_poll[num_of_ser][4] += vm[host[h][0]][1]
-        #                         move_num -= 1
-        #                         break
-        #                     elif v[3] >= vm[host[h][0]][0] and v[4] >= vm[host[h][0]][1]:
-        #                         day_move[h] = [k, 'B']
-        #                         servers[num_of_ser].remove(h)
-        #                         servers[k].append(h)
-        #                         v[3] -= vm[host[h][0]][0]   # 更新服务器池的信息
-        #                         v[4] -= vm[host[h][0]][1]
-        #                         if host[h][2] == 'A':
-        #                             serv_poll[num_of_ser][1] += vm[host[h][0]][0]
-        #                             serv_poll[num_of_ser][2] += vm[host[h][0]][1]
-        #                         else:
-        #                             serv_poll[num_of_ser][3] += vm[host[h][0]][0]
-        #                             serv_poll[num_of_ser][4] += vm[host[h][0]][1]
-        #                         move_num -= 1
-        #                         break
-        #             if move_num == 0:
-        #                 break
-        #         if len(servers[num_of_ser]) == 0:       # 当前服务器迁移完
-        #             num_of_ser -= 1
-        #         else:
-        #             break
+        move_num = NUM_VM // 200                        # 迁移数量不能超过当前VM的5/1000
+        if NUM and move_num:
+            num_of_ser = NUM - 1
+            while move_num > 0:
+                for h in servers[num_of_ser]:           # servers = {服务器ID：[主机...]}
+                    for k, v in serv_poll.items():      # serv_poll = {服务器ID：[型号，两个节点的资源]}
+                        if k >= num_of_ser:
+                            break
+                        if vm[host[h][0]][2] == 1:
+                            if v[1] >= vm[host[h][0]][0]//2 and \
+                                    v[3] >= vm[host[h][0]][0]//2 and \
+                                    v[2] >= vm[host[h][0]][1]//2 and \
+                                    v[4] >= vm[host[h][0]][1]//2:
+                                day_move[h] = [num_of_ser, k]
+                                v[1] -= vm[host[h][0]][0] // 2  # 更新服务器池的信息
+                                v[2] -= vm[host[h][0]][1] // 2
+                                v[3] -= vm[host[h][0]][0] // 2
+                                v[4] -= vm[host[h][0]][1] // 2
+                                serv_poll[num_of_ser][1] += vm[host[h][0]][0] // 2
+                                serv_poll[num_of_ser][2] += vm[host[h][0]][1] // 2
+                                serv_poll[num_of_ser][3] += vm[host[h][0]][0] // 2
+                                serv_poll[num_of_ser][4] += vm[host[h][0]][1] // 2
+                                servers[num_of_ser].remove(h)
+                                servers[k].append(h)
+                                host[h][1] = k
+                                move_num -= 1
+                                break
+                        else:
+                            if v[1] >= vm[host[h][0]][0] and v[2] >= vm[host[h][0]][1]:
+                                # day_move[h] = [k, 'A']
+                                servers[num_of_ser].remove(h)
+                                servers[k].append(h)
+                                v[1] -= vm[host[h][0]][0]   # 更新服务器池的信息
+                                v[2] -= vm[host[h][0]][1]
+                                if host[h][2] == 'A':
+                                    day_move[h] = [num_of_ser, 'A', k, 'A']
+                                    serv_poll[num_of_ser][1] += vm[host[h][0]][0]
+                                    serv_poll[num_of_ser][2] += vm[host[h][0]][1]
+                                else:
+                                    day_move[h] = [num_of_ser, 'B', k, 'A']
+                                    serv_poll[num_of_ser][3] += vm[host[h][0]][0]
+                                    serv_poll[num_of_ser][4] += vm[host[h][0]][1]
+                                move_num -= 1
+                                host[h][1] = k
+                                host[h][2] = 'A'
+                                break
+                            elif v[3] >= vm[host[h][0]][0] and v[4] >= vm[host[h][0]][1]:
+                                # day_move[h] = [k, 'B']
+                                servers[num_of_ser].remove(h)
+                                servers[k].append(h)
+                                v[3] -= vm[host[h][0]][0]   # 更新服务器池的信息
+                                v[4] -= vm[host[h][0]][1]
+                                if host[h][2] == 'A':
+                                    day_move[h] = [num_of_ser, 'A', k, 'B']
+                                    serv_poll[num_of_ser][1] += vm[host[h][0]][0]
+                                    serv_poll[num_of_ser][2] += vm[host[h][0]][1]
+                                else:
+                                    day_move[h] = [num_of_ser, 'B', k, 'B']
+                                    serv_poll[num_of_ser][3] += vm[host[h][0]][0]
+                                    serv_poll[num_of_ser][4] += vm[host[h][0]][1]
+                                move_num -= 1
+                                host[h][1] = k
+                                host[h][2] = 'B'
+                                break
+                    if move_num == 0:
+                        break
+                if len(servers[num_of_ser]) == 0:       # 当前服务器迁移完
+                    num_of_ser -= 1
+                else:
+                    break
 
         # 处理当天请求
-        # serv_poll[NUM] = [ser[0], ser[1] / 2, ser[2] / 2, ser[1] / 2, ser[2] / 2]
-        for req in Reqs[i]:
-            flag = 0            # 如果当前请求满足了，则flag置为1，否则为0，需要扩容服务器
-            if req[0] == 'add':
-                for k, v in serv_poll.items():
-                    if vm[req[1]][2] == 1:                      # 双节点部署
-                        if v[1] >= vm[req[1]][0]//2 and \
-                                v[2] >= vm[req[1]][1]//2 and \
-                                v[3] >= vm[req[1]][0]//2 and \
-                                v[4] >= vm[req[1]][1]//2:
-                            if i < Days//6:                    # 前面条件不符合优先扩容
-                                if value_rd(vm[req[1]][3], round(v[1]/v[2], 1), 0.3) and \
-                                        value_rd(vm[req[1]][3], round(v[3]/v[4], 1), 0.3):
-                                    if (v[1]-vm[req[1]][0]//2 < 5 and v[2]-vm[req[1]][1]//2 > 40) or \
-                                            (v[1]-vm[req[1]][0]//2 > 40 and v[2]-vm[req[1]][1]//2 < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k]             # 存放主机的部署信息 host = {主机号：[虚拟机类型，服务器ID]}
-                                    servers[k].append(req[2])              # servers = {服务器ID：[主机...]}
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    v[1] -= vm[req[1]][0]//2           # 更新服务器池的信息
-                                    v[2] -= vm[req[1]][1]//2
-                                    v[3] -= vm[req[1]][0]//2
-                                    v[4] -= vm[req[1]][1]//2
-                                    flag = 1                        # 标志请求是否满足
-                                    NUM_VM += 1
-                                    break
-                            elif i < Days//2:                   # 条件不符合放宽条件
-                                if value_rd(vm[req[1]][3], round(v[1] / v[2], 1), 0.5) and \
-                                        value_rd(vm[req[1]][3], round(v[3]/v[4], 1), 0.5):
-                                    if (v[1] - vm[req[1]][0] // 2 < 5 and v[2] - vm[req[1]][1] // 2 > 40) or \
-                                            (v[1] - vm[req[1]][0] // 2 > 40 and v[2] - vm[req[1]][1] // 2 < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k]  # 存放主机的部署信息 host = {主机号：[虚拟机类型，服务器ID]}
-                                    servers[k].append(req[2])  # servers = {服务器ID：[主机...]}
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    v[1] -= vm[req[1]][0] // 2  # 更新服务器池的信息
-                                    v[2] -= vm[req[1]][1] // 2
-                                    v[3] -= vm[req[1]][0] // 2
-                                    v[4] -= vm[req[1]][1] // 2
-                                    flag = 1
-                                    NUM_VM += 1
-                                    break
-                            else:
-                                host[req[2]] = [req[1], k]  # 存放主机的部署信息 host = {主机号：[虚拟机类型，服务器ID]}
-                                servers[k].append(req[2])  # servers = {服务器ID：[主机...]}
-                                Day_needs[i][0] -= vm[req[1]][0]
-                                Day_needs[i][1] -= vm[req[1]][1]
-                                v[1] -= vm[req[1]][0] // 2  # 更新服务器池的信息
-                                v[2] -= vm[req[1]][1] // 2
-                                v[3] -= vm[req[1]][0] // 2
-                                v[4] -= vm[req[1]][1] // 2
-                                flag = 1
-                                NUM_VM += 1
-                                break
-                        else:
-                            continue
-                    else:                                       # 单节点部署
-                        # 判断节点是否可以部署
-                        if v[1] >= vm[req[1]][0] and v[2] >= vm[req[1]][1]:     # 判断A节点资源
-                            if i < Days//6:           # 前一半
-                                if value_rd(vm[req[1]][3], round(v[1]/v[2], 1), 0.3):
-                                    if (v[1] - vm[req[1]][0] < 5 and v[2] - vm[req[1]][1] > 50) or \
-                                            (v[1] - vm[req[1]][0] > 50 and v[2] - vm[req[1]][1] < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k, 'A']  # [虚拟机类型，服务器ID，节点]
-                                    servers[k].append(req[2])
-                                    v[1] -= vm[req[1]][0]  # 更新服务器池的信息
-                                    v[2] -= vm[req[1]][1]
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    flag = 1
-                                    NUM_VM += 1
-                                    break
-                            elif i < Days//2:
-                                if value_rd(vm[req[1]][3], round(v[1]/v[2], 1), 0.5):
-                                    if (v[1] - vm[req[1]][0] < 5 and v[2] - vm[req[1]][1] > 50) or \
-                                            (v[1] - vm[req[1]][0] > 50 and v[2] - vm[req[1]][1] < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k, 'A']  # [虚拟机类型，服务器ID，节点]
-                                    servers[k].append(req[2])
-                                    v[1] -= vm[req[1]][0]  # 更新服务器池的信息
-                                    v[2] -= vm[req[1]][1]
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    flag = 1
-                                    NUM_VM += 1
-                                    break
-                            else:               # 放宽条件，资源足够就部署
-                                host[req[2]] = [req[1], k, 'A']  # [虚拟机类型，服务器ID，节点]
-                                servers[k].append(req[2])
-                                v[1] -= vm[req[1]][0]  # 更新服务器池的信息
-                                v[2] -= vm[req[1]][1]
-                                Day_needs[i][0] -= vm[req[1]][0]
-                                Day_needs[i][1] -= vm[req[1]][1]
-                                flag = 1
-                                NUM_VM += 1
-                                break
-                        elif v[3] >= vm[req[1]][0] and v[4] >= vm[req[1]][1]:       # 判断B节点资源
-                            if i < Days//6:
-                                if value_rd(vm[req[1]][3], round(v[3]/v[4], 1), 0.3):
-                                    if (v[3] - vm[req[1]][0] < 5 and v[4] - vm[req[1]][1] > 50) or \
-                                            (v[3] - vm[req[1]][0] > 50 and v[4] - vm[req[1]][1] < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k, 'B']  # [虚拟机类型，服务器ID，节点]
-                                    servers[k].append(req[2])
-                                    v[3] -= vm[req[1]][0]  # 更新服务器池的信息
-                                    v[4] -= vm[req[1]][1]
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    flag = 1
-                                    NUM_VM += 1
-                                    break
-                            elif i < Days//2:
-                                if value_rd(vm[req[1]][3], round(v[3]/v[4], 1), 0.5):
-                                    if (v[3] - vm[req[1]][0] < 5 and v[4] - vm[req[1]][1] > 50) or \
-                                            (v[3] - vm[req[1]][0] > 50 and v[4] - vm[req[1]][1] < 5):
-                                        continue
-                                    host[req[2]] = [req[1], k, 'B']  # [虚拟机类型，服务器ID，节点]
-                                    servers[k].append(req[2])
-                                    v[3] -= vm[req[1]][0]  # 更新服务器池的信息
-                                    v[4] -= vm[req[1]][1]
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    flag = 1
-                                    NUM_VM += 1
-                                    break
-                            else:
-                                host[req[2]] = [req[1], k, 'B']  # [虚拟机类型，服务器ID，节点]
-                                servers[k].append(req[2])
-                                v[3] -= vm[req[1]][0]  # 更新服务器池的信息
-                                v[4] -= vm[req[1]][1]
-                                Day_needs[i][0] -= vm[req[1]][0]
-                                Day_needs[i][1] -= vm[req[1]][1]
-                                flag = 1
-                                NUM_VM += 1
-                                break
-                        else:
-                            continue
-                if flag == 0:
-                    # 部署失败，需要扩容服务器
-                    # vm = {型号：[CPU，RAM，单双，crr]}
-                    r = 0.2
-                    while True:
-                        flag1 = 0           # 标志是否扩容成功
-                        for ser in serv:
-                            if value_rd(round(Day_needs[i][0]/Day_needs[i][1], 1), ser[5], r) and \
-                                    ser[1] // 2 >= vm[req[1]][0] and \
-                                    ser[2] // 2 >= vm[req[1]][1]:
-                                # 购买服务器
-                                serv_poll[NUM] = [ser[0], ser[1] // 2, ser[2] // 2, ser[1] // 2, ser[2] // 2]
-                                day_serv.append([NUM, ser[0]])          # 服务器id, 服务器型号
-                                if ser[0] in day_serv_kind:
-                                    day_serv_kind[ser[0]] += 1
-                                else:
-                                    day_serv_kind[ser[0]] = 1
-                                flag1 = 1
-                                # 部署虚拟机
-                                if vm[req[1]][2] == 1:
-                                    host[req[2]] = [req[1], NUM]  # 存放主机的部署信息 host = {主机号：[虚拟机类型，服务器ID]}
-                                    servers[NUM] = [req[2]]
-                                    serv_poll[NUM][1] -= vm[req[1]][0] // 2  # 更新服务器池的信息
-                                    serv_poll[NUM][2] -= vm[req[1]][1] // 2
-                                    serv_poll[NUM][3] -= vm[req[1]][0] // 2
-                                    serv_poll[NUM][4] -= vm[req[1]][1] // 2
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    NUM_VM += 1
-                                else:
-                                    host[req[2]] = [req[1], NUM, 'A']  # [虚拟机类型，服务器ID，节点]
-                                    servers[NUM] = [req[2]]
-                                    serv_poll[NUM][1] -= vm[req[1]][0]  # 更新服务器池的信息
-                                    serv_poll[NUM][2] -= vm[req[1]][1]
-                                    Day_needs[i][0] -= vm[req[1]][0]
-                                    Day_needs[i][1] -= vm[req[1]][1]
-                                    NUM_VM += 1
-                                NUM += 1
-                                break
-                        if flag1 == 1:
-                            break
-                        else:
-                            if vm[req[1]][3] > 1:
-                                r += 1
-                            else:
-                                r += 0.1
+        
 
             else:
                 # 请求为 del
@@ -352,6 +183,7 @@ def main():
                     else:
                         serv_poll[host[req[1]][1]][3] += vm[host[req[1]][0]][0]
                         serv_poll[host[req[1]][1]][4] += vm[host[req[1]][0]][1]
+                servers[host[req[1]][1]].remove(req[1])
 
         # 修改服务器ID
         # day_serv = [服务器id, 服务器型号]
@@ -364,6 +196,7 @@ def main():
             star = NUM - len(day_serv)
             for num in range(star, NUM):                # 记录修改之前的资源池信息
                  pre_serv_poll[num] = serv_poll[num]
+            change_serv = {}
             for key in day_serv_kind.keys():
                 for j in range(day_serv_kind[key]):
                     for k, v in pre_serv_poll.items():
@@ -371,20 +204,22 @@ def main():
                             serv_poll[star] = v
                             for temp in servers[k]:
                                 host[temp][1] = star
+                            change_serv[star] = servers[k]
                             pre_serv_poll.pop(k)
                             star += 1
                             break
+            servers.update(change_serv)
 
         # 输出购买信息
         # print("(purchase, %s)" % len(day_serv_kind))
-        # for k, v in day_serv_kind.items():
+        # for k, v in day_serv_kind.items():              # {型号：数量}
         #     print("(%s, %s)" % (k, v))
         #
         # # 输出迁移信息
         # # day_move = {主机：[目的服务器, ]}
         # nums_of_move = len(day_move)
         # print("(migration, %s)" % nums_of_move)
-        # for h, s in day_move.items():
+        # for h, s in day_move.items():           # day_move = {主机ID：[目的服务器] }
         #     if len(s) == 1:
         #         print("(%s, %s)" % (h, s[0]))
         #     else:
@@ -396,7 +231,74 @@ def main():
         #         else:
         #             print("(%s, %s)" % (host[req[2]][1], host[req[2]][2]))
 
-        print(serv_poll)
+
+
+        for k, v in day_serv_kind.items():              # {型号：数量}
+            print("(%s, %s)" % (k, v))
+            for n in range(v):
+                yanzheng[yan_n] = [serv_dict[k][0]//2, serv_dict[k][1]//2, serv_dict[k][0]//2, serv_dict[k][1]//2]
+                yan_n += 1
+            cost += serv_dict[k][2] * v
+
+        # 输出迁移信息
+        # day_move = {主机：[目的服务器, ]}
+        nums_of_move = len(day_move)
+        # print("(migration, %s)" % nums_of_move)
+        for h, s in day_move.items():           # day_move = {主机ID：[原服务器，目的服务器] }
+            if len(s) == 2:
+                yanzheng[s[0]][0] += vm[host[h][0]][0] // 2
+                if yanzheng[s[0]][0] > serv_dict[s[0]][0]//2:
+                    print("资源超出限制：")
+                    print(h, s)
+                yanzheng[s[0]][1] += vm[host[h][0]][1] // 2
+                if yanzheng[s[0]][1] > serv_dict[s[0]][1]//2:
+                    print("资源超出限制：")
+                    print(h, s)
+                yanzheng[s[0]][2] += vm[host[h][0]][0] // 2
+                if yanzheng[s[0]][2] > serv_dict[s[0]][0]//2:
+                    print("资源超出限制：")
+                    print(h, s)
+                yanzheng[s[0]][3] += vm[host[h][0]][1] // 2
+                if yanzheng[s[0]][3] > serv_dict[s[0]][1]//2:
+                    print("资源超出限制：")
+                    print(h, s)
+
+                yanzheng[s[1]][0] -= c // 2
+                if yanzheng[s[1]][0] < 0:
+                    print("迁移出错：资源超出限制")
+                    print(h, s)
+                yanzheng[s[1]][1] -= vm[host[h][0]][1] // 2
+                if yanzheng[s[1]][1] < 0:
+                    print("迁移出错：资源超出限制")
+                    print(h, s)
+                yanzheng[s[1]][2] -= vm[host[h][0]][0] // 2
+                if yanzheng[s[1]][2] < 0:
+                    print("迁移出错：资源超出限制")
+                    print(h, s)
+                yanzheng[s[1]][3] -= vm[host[h][0]][1] // 2
+                if yanzheng[s[1]][3] < 0:
+                    print("迁移出错：资源超出限制")
+                    print(h, s)
+
+            else:
+                if s[1] == 'A':              # 原来在A节点
+                    yanzheng[s[0]][0] += vm[host[h][0]][0]              # cpu
+                    if yanzheng[s[0]][0] > serv_dict[s[0]][0] // 2:
+                        print("资源超出限制：")
+                        print(h, s)
+                    yanzheng[s[0]][1] += vm[host[h][0]][1]              # ram
+                    if yanzheng[s[0]][1] > serv_dict[s[0]][1] // 2:
+                        print("资源超出限制：")
+                        print(h, s)
+
+        for req in Reqs[i]:
+            if req[0] == 'add':
+                if vm[req[1]][2] == 1:
+                    print("(%s)" % host[req[2]][1])
+                else:
+                    print("(%s, %s)" % (host[req[2]][1], host[req[2]][2]))
+
+        # print(serv_poll)
         # print("********************")
 
 
